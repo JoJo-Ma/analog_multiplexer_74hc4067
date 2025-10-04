@@ -1,32 +1,14 @@
-#if __has_include(<zephyr/kernel.h>)
 #include <zephyr/kernel.h>
-#include <stdio.h>
 #include <zephyr/device.h>
+#include <stdio.h>
 #include <errno.h>
-
 #include <zephyr/drivers/uart.h>
-
-
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>
-#define APP_HAS_ZEPHYR 1
-#else
-#include <cstdio>
-#include <cstdint>
-#define LOG_INF(fmt, ...) std::printf("[app][INF] " fmt "\n", ##__VA_ARGS__)
-#define LOG_ERR(fmt, ...) std::printf("[app][ERR] " fmt "\n", ##__VA_ARGS__)
-#define LOG_MODULE_REGISTER(name)
-struct k_work {};
-static inline void k_work_init(k_work*, void(*)(k_work*)) {}
-static inline void k_sleep(int) {}
-static inline int K_MSEC(int v){ return v; }
-#endif
 #include "hc4067.h"
-#if __has_include(<zephyr/devicetree.h>)
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/adc.h>
-#endif
 LOG_MODULE_REGISTER(app);
 
 using namespace std;
@@ -49,9 +31,7 @@ static struct interface_set_params interface_params;
 
 
 
-#ifdef APP_HAS_ZEPHYR
-static const struct device *const uart_dev_usb_serial = DEVICE_DT_GET(DT_NODELABEL(usb_serial));
-#endif
+/* Remove unused UART reference to avoid warnings */
 
 
 
@@ -77,7 +57,6 @@ int main(void)
     k_work_init(&interface_set_work, interface_set_work_handler);
     
     /* Devicetree-backed GPIO specs for the HC4067 mux */
-#ifdef APP_HAS_ZEPHYR
     const gpio_dt_spec mux_en = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), en_gpios);
     const gpio_dt_spec mux_s0 = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), s0_gpios);
     const gpio_dt_spec mux_s1 = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), s1_gpios);
@@ -97,22 +76,11 @@ int main(void)
         .buffer_size = 0,
         .resolution = 12,
     };
-#else
-    gpio_dt_spec mux_en = {};
-    gpio_dt_spec mux_s0 = {};
-    gpio_dt_spec mux_s1 = {};
-    gpio_dt_spec mux_s2 = {};
-    gpio_dt_spec mux_s3 = {};
-#endif
     
     HC4067 mux(mux_s0, mux_s1, mux_s2, mux_s3, mux_en);
     if (!mux.initialize()) {
         LOG_ERR("Failed to initialize HC4067 mux");
-        #ifdef APP_HAS_ZEPHYR
         return -EIO;
-        #else
-        return -5; /* EIO */
-        #endif
     }
     mux.set_enabled(true);
     if (!device_is_ready(adc_dev)) {

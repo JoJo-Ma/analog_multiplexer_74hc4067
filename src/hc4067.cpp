@@ -1,18 +1,8 @@
 #include "hc4067.h"
 
-#if __has_include(<zephyr/logging/log.h>)
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(hc4067, CONFIG_LOG_DEFAULT_LEVEL);
-#else
-#include <cstdio>
-#define LOG_ERR(fmt, ...) std::printf("[hc4067][ERR] " fmt "\n", ##__VA_ARGS__)
-#ifndef EINVAL
-#define EINVAL 22
-#endif
-#ifndef ENODEV
-#define ENODEV 19
-#endif
-#endif
+#include <errno.h>
 
 HC4067::HC4067(const gpio_dt_spec &select0,
 	           const gpio_dt_spec &select1,
@@ -23,7 +13,6 @@ HC4067::HC4067(const gpio_dt_spec &select0,
 
 int HC4067::configure_output_pin(const gpio_dt_spec &spec, gpio_flags_t extra_flags)
 {
-#ifdef HC4067_HAS_ZEPHYR
     if (!device_is_ready(spec.port)) {
         LOG_ERR("GPIO port not ready");
         return -ENODEV;
@@ -33,10 +22,6 @@ int HC4067::configure_output_pin(const gpio_dt_spec &spec, gpio_flags_t extra_fl
         LOG_ERR("Failed to configure GPIO %d rc=%d", spec.pin, rc);
     }
     return rc;
-#else
-    (void)spec; (void)extra_flags;
-    return 0;
-#endif
 }
 
 bool HC4067::initialize()
@@ -52,9 +37,7 @@ bool HC4067::initialize()
 	}
 
     /* Disable by default (EN high for HC4067 is disable) */
-#ifdef HC4067_HAS_ZEPHYR
     gpio_pin_set_dt(&en, 1);
-#endif
 	enabled = false;
 	activeChannel = 0;
 	initialized = true;
@@ -64,10 +47,8 @@ bool HC4067::initialize()
 void HC4067::set_enabled(bool doEnable)
 {
 	if (!initialized) return;
-	/* HC4067 enable is active LOW: set 0 to enable, 1 to disable */
-#ifdef HC4067_HAS_ZEPHYR
+    /* HC4067 enable is active LOW: set 0 to enable, 1 to disable */
     gpio_pin_set_dt(&en, doEnable ? 0 : 1);
-#endif
 	enabled = doEnable;
 }
 
@@ -76,24 +57,19 @@ int HC4067::select_channel(uint8_t channel)
 	if (!initialized) return -EINVAL;
 	if (channel > 15) return -EINVAL;
 
-	/* Set S0..S3 according to channel LSB..MSB */
-#ifdef HC4067_HAS_ZEPHYR
+    /* Set S0..S3 according to channel LSB..MSB */
     gpio_pin_set_dt(&s0, (channel >> 0) & 0x1);
     gpio_pin_set_dt(&s1, (channel >> 1) & 0x1);
     gpio_pin_set_dt(&s2, (channel >> 2) & 0x1);
     gpio_pin_set_dt(&s3, (channel >> 3) & 0x1);
-#endif
 
 	activeChannel = channel;
 
-	/* Allow short settling time for the analog switch */
-    #ifdef HC4067_HAS_ZEPHYR
+    /* Allow short settling time for the analog switch */
     k_busy_wait(100); /* settle longer for ADC sampling */
-    #endif
 	return 0;
 }
 
-#ifdef HC4067_HAS_ZEPHYR
 bool HC4067::configure_adc(const struct device *adc_device,
                            uint8_t adc_channel_id,
                            uint8_t resolution_bits)
@@ -140,6 +116,5 @@ int HC4067::read_channel_adc(uint8_t channel, int16_t &out_sample)
     int rc = adc_read(adcDev, &seq);
     return rc;
 }
-#endif
 
 
