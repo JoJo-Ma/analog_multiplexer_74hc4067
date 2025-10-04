@@ -7,6 +7,18 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/adc.h>
 
+/* Convenience macros to construct an HC4067 instance directly from DT */
+#define HC4067_INIT_FROM_DT_NODE(var_name, node_id) \
+    HC4067 var_name( \
+        GPIO_DT_SPEC_GET(node_id, s0_gpios), \
+        GPIO_DT_SPEC_GET(node_id, s1_gpios), \
+        GPIO_DT_SPEC_GET(node_id, s2_gpios), \
+        GPIO_DT_SPEC_GET(node_id, s3_gpios), \
+        GPIO_DT_SPEC_GET(node_id, en_gpios))
+
+#define HC4067_INIT_FROM_DT_NODELABEL(var_name, node_label) \
+    HC4067_INIT_FROM_DT_NODE(var_name, DT_NODELABEL(node_label))
+
 class HC4067 {
 public:
 	HC4067(const gpio_dt_spec &select0,
@@ -19,11 +31,11 @@ public:
 	void set_enabled(bool enabled);
 	int select_channel(uint8_t channel);
 
-	/* Optional ADC integration (Zephyr only). The ADC channel is the MCU ADC
-	 * channel wired to the mux SIG pin. Resolution is in bits (e.g., 12). */
-	bool configure_adc(const struct device *adc_device,
-	                  uint8_t adc_channel_id,
-	                  uint8_t resolution_bits = 12);
+    /* ADC integration: caller provides full channel config; driver applies it
+     * and stores channel id and resolution. */
+    bool configure_adc(const struct device *adc_device,
+                      const adc_channel_cfg &channel_cfg,
+                      uint8_t resolution_bits = 12);
 	int read_channel_adc(uint8_t channel, int16_t &out_sample);
 
 	bool is_initialized() const { return initialized; }

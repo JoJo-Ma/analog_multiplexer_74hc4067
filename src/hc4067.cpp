@@ -71,7 +71,7 @@ int HC4067::select_channel(uint8_t channel)
 }
 
 bool HC4067::configure_adc(const struct device *adc_device,
-                           uint8_t adc_channel_id,
+                           const adc_channel_cfg &channel_cfg_in,
                            uint8_t resolution_bits)
 {
     if (adc_device == nullptr || !device_is_ready(adc_device)) {
@@ -80,17 +80,10 @@ bool HC4067::configure_adc(const struct device *adc_device,
     }
 
     adcDev = adc_device;
-    adcChannelId = adc_channel_id;
+    adcChannelId = channel_cfg_in.channel_id;
     adcResolutionBits = resolution_bits;
 
-    adc_channel_cfg channel_cfg = {};
-    /* Use ~11 dB attenuation equivalent to cover ~0-3.3V (driver maps gain) */
-    /* For ESP32-C3, this gain maps to ~11 dB attenuation (~0-3.3V FS) */
-    channel_cfg.gain = ADC_GAIN_1_4;
-    channel_cfg.reference = ADC_REF_INTERNAL;
-    channel_cfg.acquisition_time = ADC_ACQ_TIME_DEFAULT;
-    channel_cfg.channel_id = adcChannelId;
-    channel_cfg.differential = 0;
+    adc_channel_cfg channel_cfg = channel_cfg_in;
 
     int rc = adc_channel_setup(adcDev, &channel_cfg);
     if (rc) {

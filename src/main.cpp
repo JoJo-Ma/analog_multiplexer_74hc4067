@@ -15,69 +15,20 @@ using namespace std;
 
 int main_tick_interval = 100;
 
-bool net_if_ready = false;
-
-
-
-
-struct interface_set_params {
-    int interface;
-    bool state;
-};
-
-// Work item for interface_set
-static struct k_work interface_set_work;
-static struct interface_set_params interface_params;
-
-
-
-/* Remove unused UART reference to avoid warnings */
-
-
-
-
-void interface_set(int interface, bool state);
-
-
-
-void interface_set(int interface, bool state)
-{
-    
-}
-
-static void interface_set_work_handler(struct k_work *work)
-{
-    interface_set(interface_params.interface, interface_params.state);
-}
-
 
 
 int main(void)
 {
-    k_work_init(&interface_set_work, interface_set_work_handler);
-    
-    /* Devicetree-backed GPIO specs for the HC4067 mux */
-    const gpio_dt_spec mux_en = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), en_gpios);
-    const gpio_dt_spec mux_s0 = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), s0_gpios);
-    const gpio_dt_spec mux_s1 = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), s1_gpios);
-    const gpio_dt_spec mux_s2 = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), s2_gpios);
-    const gpio_dt_spec mux_s3 = GPIO_DT_SPEC_GET(DT_NODELABEL(mux0), s3_gpios);
+    /* Construct HC4067 directly from Devicetree */
+    HC4067_INIT_FROM_DT_NODELABEL(mux, mux0);
     const struct device *adc_dev = DEVICE_DT_GET(DT_IO_CHANNELS_CTLR(DT_PATH(zephyr_user)));
-    const adc_channel_cfg adc_cfg = {
-        .gain = ADC_GAIN_1,
-        .reference = ADC_REF_INTERNAL,
-        .acquisition_time = ADC_ACQ_TIME_DEFAULT,
-        .channel_id = DT_IO_CHANNELS_INPUT(DT_PATH(zephyr_user)),
-        .differential = 0,
-    };
-    struct adc_sequence adc_seq = {
-        .channels = BIT(adc_cfg.channel_id),
-        .buffer = NULL,
-        .buffer_size = 0,
-        .resolution = 12,
-    };
+    adc_channel_cfg adc_cfg = {};
+    adc_cfg.gain = ADC_GAIN_1_4;
+    adc_cfg.reference = ADC_REF_INTERNAL;
+    adc_cfg.acquisition_time = ADC_ACQ_TIME_DEFAULT;
+    adc_cfg.channel_id = DT_IO_CHANNELS_INPUT(DT_PATH(zephyr_user));
+    adc_cfg.differential = 0;
     
-    HC4067 mux(mux_s0, mux_s1, mux_s2, mux_s3, mux_en);
     if (!mux.initialize()) {
         LOG_ERR("Failed to initialize HC4067 mux");
         return -EIO;
@@ -87,7 +38,7 @@ int main(void)
         LOG_ERR("ADC device not ready");
         return -EIO;
     }
-    if (!mux.configure_adc(adc_dev, adc_cfg.channel_id, adc_seq.resolution)) {
+    if (!mux.configure_adc(adc_dev, adc_cfg, 12)) {
         LOG_ERR("Failed to configure ADC in mux driver");
         return -EIO;
     }
