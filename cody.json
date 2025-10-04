@@ -1,0 +1,51 @@
+{
+  "id": "68e0bdee7198516e2e36ec5f",
+  "name": "analog_multiplexer_74hc4067",
+  "device": "espressif_esp32c3_devkitm",
+  "description": "",
+  "shortDescription": "",
+  "version": "0.1.19",
+  "runtime": "zephyr",
+  "features": [
+    {
+      "id": "general",
+      "settings": {
+        "ID": "mgbw2bukwpkw5gtmgei",
+        "DEVICE_NAME": "Device_Name_1",
+        "FIRMWAREVERSION": "1.0.0",
+        "TIMEZONE": "0",
+        "LATITUDE": "0",
+        "LONGITUDE": "0",
+        "LOGGING": "usb_serial"
+      }
+    },
+    {
+      "id": "serial",
+      "settings": {
+        "ID": "usb_serial",
+        "NAME": "usb_serial",
+        "BUILTIN": "1",
+        "BUILTINID": "usb_serial",
+        "ENABLED": "1",
+        "PORT": "usb_serial",
+        "TX": "",
+        "RX": "",
+        "RTS": "",
+        "CTS": "",
+        "DTR": "",
+        "DSR": "",
+        "BAUD": "115200",
+        "FLOWCONTROL": "0",
+        "PARITY": "0",
+        "BITS": "1"
+      }
+    },
+    {
+      "id": "custom_features",
+      "settings": {
+        "ID": "mgbw3rknxrmtqtc750f",
+        "FEATURES": []
+      }
+    }
+  ]
+}

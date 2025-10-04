@@ -1,0 +1,2 @@
+loadbin ./build/zephyr/zephyr.bin 0x0
+exit

@@ -1,0 +1,65 @@
+
+
+
+&i2c0 {
+    status = "disabled";
+};
+&uart0 {
+    status = "disabled";
+};
+&usb_serial {
+    status = "disabled";
+};
+&spi2 {
+    status = "disabled";
+};
+&esp32_bt_hci {
+    status = "disabled";
+};
+
+
+/ {
+	
+
+	chosen {
+		/delete-property/ zephyr,shell-uart;
+		        
+        zephyr,console=&usb_serial;
+
+	};
+};
+
+
+&usb_serial {
+    status = "okay";
+    current-speed = <115200>;
+
+};
+
+
+&pinctrl {
+	
+};
+
+
+&adc0 {
+	status = "okay";
+};
+
+/ {
+    zephyr,user {
+        /* Use ADC0 channel 0 for SIG (GPIO0 on ESP32-C3) */
+        io-channels = <&adc0 0>;
+    };
+    mux0: hc4067 {
+		compatible = "ti,cd74hc4067";
+        /* Enable is active-low on part, but we drive raw levels via *_dt calls.
+           Keeping ACTIVE_HIGH here for straightforward logical mapping (1 => high). */
+		en-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
+		s0-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+		s1-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+		s2-gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+        s3-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+};

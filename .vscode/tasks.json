@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+                
+        {
+            "label": "West Build",
+            "command": "source $ZEPHYR_BASE/../.venv/bin/activate && west build ./ -b esp32c3_devkitm --build-dir ./build",
+            "windows": {
+                "command": "west build ./ -b esp32c3_devkitm --build-dir ./build",
+            },
+            "type": "shell",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "West Flash",
+            "command": "source $ZEPHYR_BASE/../.venv/bin/activate && west flash --build-dir ./build",
+            "type": "shell",
+            "windows": {
+                "command": "west flash --build-dir ./build",
+            },
+            "dependsOn": "West Build",
+            "problemMatcher": []
+        },
+        {
+            "label": "JLINK Flash",
+            "command": "JLinkExe -device  -if SWD -speed 4000 -autoconnect 1 -CommanderScript jlink_flash.jlink",
+            "type": "shell",
+            "dependsOn": "West Build",
+            "problemMatcher": []
+        },
+        {
+            "label": "West Docker Build",
+            "command": "docker run --rm -v $ZEPHYR_BASE/../:/workdir -v ./:/workdir/analog_multiplexer_74hc4067 ghcr.io/zephyrproject-rtos/zephyr-build:latest /bin/bash -c 'west build -b esp32c3_devkitm /workdir/analog_multiplexer_74hc4067 --build-dir /workdir/analog_multiplexer_74hc4067/build'",
+            "type": "shell",
+            "problemMatcher": []
+        },
+                    
+
+     ]
+}

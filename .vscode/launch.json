@@ -1,0 +1,112 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+                
+        {
+            "name": "GDB Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "MIMode": "gdb",
+            "debugServerArgs": "-f ${workspaceFolder}/openocd.cfg",
+            "debugServerPath": "${env:OPENOCD_PATH}/bin/openocd",
+            "miDebuggerPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gdb",
+            "miDebuggerServerAddress": "localhost:3333",
+            "program": "${workspaceFolder}/build/zephyr/zephyr.elf",
+            "windows": {
+                "debugServerArgs": "-f ${env:OPENOCD_PATH}\\share\\openocd\\scripts\\board\\esp32c3-builtin.cfg",
+                "debugServerPath": "${env:OPENOCD_PATH}\\bin\\openocd.exe",
+                "miDebuggerPath": "${env:ZEPHYR_SDK_INSTALL_DIR}\\riscv64-zephyr-elf\\bin\\riscv64-zephyr-elf-gdb.exe",
+                "program": "${workspaceFolder}\\build\\zephyr\\zephyr.elf",
+            },
+            "cwd": "${workspaceFolder}",
+            "serverStarted": "Listening on port 3333 for gdb connections",
+            "useExtendedRemote": true,
+            "stopAtEntry": true,
+            "stopAtConnect": true,
+            "preLaunchTask": "West Flash",
+            "filterStderr": true,
+            "filterStdout": false,
+            "setupCommands": [
+                {
+                    "text": "set remotetimeout 20"
+                },
+            ],
+            "postRemoteConnectCommands": [
+                {
+                    "text": "mon reset halt"
+                },
+                {
+                    "text": "maintenance flush register-cache"
+                },
+            ],
+            "externalConsole": false,
+            "logging": {
+                "moduleLoad": false,
+                "trace": true,
+                "engineLogging": true,
+                "programOutput": true,
+                "exceptions": true
+            },
+            //"hardwareBreakpoints": {
+            //    "require": true,
+            //    "limit": 3
+            //}
+        },
+        {
+            "name": "Debug jLink",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/zephyr/zephyr.elf",
+            "armToolchainPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin",
+            "interface": "swd",
+            "toolchainPrefix": "arm-zephyr-eabi",
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "raw",
+            "preLaunchTask": "West Flash",
+            "device": ""
+        },
+        {
+            "type": "node-terminal",
+            "name": "Upload Python files",
+            "request": "launch",
+            "preLaunchTask": "West Build",
+            "command": "source $ZEPHYR_BASE/../.venv/bin/activate && west flash --build-dir ./build",
+        },
+        {
+            "name": "Launch With JJLINK",
+            "type": "cppdbg",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/build/zephyr/zephyr.elf",
+            "MIMode": "gdb",
+            "miDebuggerPath": "${env:ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+            "setupCommands": [
+                {
+                    "text": "file '${workspaceFolder}/build/zephyr/zephyr.elf"
+                },
+                {
+                    "text": "target remote localhost:3333"
+                },
+                
+                {
+                    "text": "break main"
+                },
+            ],
+            "targetArchitecture": "arm",
+            "debugServerPath": "/Applications/SEGGER/JLink/JLinkGDBServerCLExe",
+            "debugServerArgs": "-if swd -speed 4000 -endian little -port 3333 -device STM32F207VG",
+            "serverStarted": "Connected to target",
+            "filterStdout": true,
+            //"stopAtConnect": true,
+            "preLaunchTask": "JLINK Flash",
+            // "svdPath": "${workspaceFolder}/platforms/stm32f407vg/STM32F407.svd"
+        }
+        
+
+    ]
+}

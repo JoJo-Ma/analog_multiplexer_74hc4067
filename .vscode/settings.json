@@ -1,0 +1,5 @@
+{
+        
+    // "python.defaultInterpreterPath": "${env:ZEPHYR_BASE}\\..\\.venv\\Scripts\\python.exe"
+ 
+}

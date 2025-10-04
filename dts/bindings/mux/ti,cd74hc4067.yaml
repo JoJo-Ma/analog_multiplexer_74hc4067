@@ -1,0 +1,40 @@
+# Copyright 2025
+# SPDX-License-Identifier: Apache-2.0
+
+title: TI CD74HC4067 16-channel analog multiplexer
+
+description: |
+  Control interface for the CD74HC4067 analog multiplexer/demultiplexer.
+  This binding models the digital control pins (EN, S0..S3) as GPIOs.
+
+compatible: "ti,cd74hc4067"
+
+include: base.yaml
+
+properties:
+  en-gpios:
+    type: phandle-array
+    required: true
+    description: Enable pin (active low on the device)
+
+  s0-gpios:
+    type: phandle-array
+    required: true
+    description: Select bit 0 (LSB)
+
+  s1-gpios:
+    type: phandle-array
+    required: true
+    description: Select bit 1
+
+  s2-gpios:
+    type: phandle-array
+    required: true
+    description: Select bit 2
+
+  s3-gpios:
+    type: phandle-array
+    required: true
+    description: Select bit 3 (MSB)
+
+
